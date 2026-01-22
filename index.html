@@ -1,0 +1,1112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planning Matchs - Demo Club</title>
+  <style>
+    :root{
+      --bg: #0f172a;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.10);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --line: rgba(255,255,255,0.14);
+      --ok: rgba(34,197,94,0.95);
+      --warn: rgba(245,158,11,0.95);
+      --bad: rgba(239,68,68,0.95);
+      --link: rgba(96,165,250,0.95);
+      --shadow: 0 12px 40px rgba(0,0,0,0.35);
+      --radius: 16px;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,0.18), transparent 60%),
+                  radial-gradient(900px 500px at 90% 20%, rgba(34,197,94,0.12), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+    }
+
+    a{ color: var(--link); text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 14px 40px 14px;
+    }
+
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+      background: rgba(15,23,42,0.78);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar-inner{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand{
+      display: flex;
+      flex-direction: column;
+      line-height: 1.2;
+      min-width: 180px;
+    }
+    .brand .title{
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      font-size: 16px;
+    }
+    .brand .sub{
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav{
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-left: auto;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .btn{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.08s ease, border-color 0.08s ease;
+      user-select: none;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .btn:hover{ background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.22); }
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(96,165,250,0.55);
+      background: rgba(96,165,250,0.18);
+    }
+    .btn.danger{
+      border-color: rgba(239,68,68,0.55);
+      background: rgba(239,68,68,0.14);
+    }
+    .btn.ghost{
+      border-color: transparent;
+      background: transparent;
+    }
+    .badge{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+    .dot{
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      display: inline-block;
+      background: rgba(255,255,255,0.40);
+    }
+    .dot.ok{ background: var(--ok); }
+    .dot.warn{ background: var(--warn); }
+    .dot.bad{ background: var(--bad); }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (min-width: 780px){
+      .grid{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.05));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card .card-h{
+      padding: 14px 14px 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .card .card-b{
+      padding: 14px;
+    }
+
+    .h-title{
+      font-size: 16px;
+      font-weight: 750;
+      margin: 0 0 6px 0;
+    }
+    .h-sub{
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .meta{
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .progress{
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .progress > div{
+      height: 100%;
+      width: 0%;
+      background: rgba(34,197,94,0.85);
+      transition: width 0.25s ease;
+    }
+
+    .split{
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    @media (min-width: 980px){
+      .split{ grid-template-columns: 1.15fr 0.85fr; align-items: start; }
+    }
+
+    .section-title{
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0.2px;
+    }
+
+    .list{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .slot{
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .slot-left{
+      flex: 1;
+      min-width: 0;
+    }
+    .slot-role{
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0 0 3px 0;
+    }
+    .slot-sub{
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .slot-right{
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill{
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      max-width: 220px;
+    }
+    .pill strong{
+      color: var(--text);
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 160px;
+      display: inline-block;
+      vertical-align: bottom;
+    }
+
+    .note{
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .footer-note{
+      margin-top: 14px;
+      color: rgba(255,255,255,0.62);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .backrow{
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    /* Modal */
+    .modal-overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 999;
+    }
+    .modal{
+      width: 100%;
+      max-width: 520px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      box-shadow: 0 18px 60px rgba(0,0,0,0.55);
+      overflow: hidden;
+    }
+    .modal-h{
+      padding: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .modal-h h3{
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .modal-h p{
+      margin: 6px 0 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .modal-b{
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+    .row{
+      display: grid;
+      gap: 6px;
+    }
+    label{
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
+    }
+    input, textarea{
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+    textarea{ min-height: 84px; resize: vertical; }
+    input:focus, textarea:focus{
+      border-color: rgba(96,165,250,0.55);
+      background: rgba(96,165,250,0.10);
+    }
+    .modal-f{
+      padding: 14px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15,23,42,0.94);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: rgba(255,255,255,0.88);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      font-size: 13px;
+      display: none;
+      z-index: 1000;
+      max-width: 92vw;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="title" id="clubTitle">Planning Matchs (Demo)</div>
+        <div class="sub" id="clubSub">Maquette statique - sans compte - inscriptions simulees</div>
+      </div>
+
+      <div class="nav">
+        <button class="btn primary" id="navList">Prochains matchs</button>
+        <button class="btn" id="navMine">Mes engagements</button>
+        <button class="btn ghost" id="navAbout">A propos</button>
+        <button class="btn danger" id="navReset">Reinitialiser</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div id="view"></div>
+    <p class="footer-note">
+      Astuce demo : tout est local (aucun serveur). Les inscriptions sont conservees sur ce navigateur via localStorage.
+      Pour une mise en prod, on branchera une API Node + base de donnees.
+    </p>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-h">
+        <div>
+          <h3 id="modalTitle">Prendre un poste</h3>
+          <p id="modalSubtitle"></p>
+        </div>
+        <button class="btn ghost" id="modalClose">Fermer</button>
+      </div>
+      <div class="modal-b">
+        <div class="row">
+          <label for="inNom">Nom / Prenom</label>
+          <input id="inNom" type="text" placeholder="Ex: Martin Dupont">
+        </div>
+        <div class="row">
+          <label for="inContact">Contact (telephone ou email)</label>
+          <input id="inContact" type="text" placeholder="Ex: 06 00 00 00 00 ou martin@mail.com">
+        </div>
+        <div class="row">
+          <label for="inComment">Commentaire (optionnel)</label>
+          <textarea id="inComment" placeholder="Ex: Je serai la 30 minutes avant."></textarea>
+        </div>
+      </div>
+      <div class="modal-f">
+        <button class="btn" id="modalCancel">Annuler</button>
+        <button class="btn primary" id="modalConfirm">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (function(){
+      /* =========================
+         DONNEES DEMO EN DUR
+         ========================= */
+      var DEMO = {
+        club: "ASB Courrieres (exemple)",
+        saison: "Saison 2025-2026",
+        matchs: [
+          {
+            id: 1,
+            dateISO: "2026-01-25",
+            heure: "15:30",
+            categorie: "U17",
+            equipe: "ASB Courrieres",
+            adversaire: "BC Lens",
+            lieu: "Salle Leo Lagrange",
+            domicileExterieur: "DOMICILE",
+            note: "Pensez aux licences et au ballon de match.",
+            besoins: [
+              { code: "ARBITRE", libelle: "Arbitre", nb: 2 },
+              { code: "OTM_CHRONO", libelle: "Table - Chrono", nb: 1 },
+              { code: "OTM_MARQUE", libelle: "Table - Marque (ordinateur)", nb: 1 },
+              { code: "SALLE", libelle: "Responsable de salle", nb: 1 },
+              { code: "BUVETTE", libelle: "Buvette", nb: 3 }
+            ]
+          },
+          {
+            id: 2,
+            dateISO: "2026-02-01",
+            heure: "18:00",
+            categorie: "Seniors",
+            equipe: "ASB Courrieres",
+            adversaire: "Lievin Basket",
+            lieu: "Gymnase Municipal",
+            domicileExterieur: "DOMICILE",
+            note: "Prevoir de la monnaie pour la buvette.",
+            besoins: [
+              { code: "ARBITRE", libelle: "Arbitre", nb: 2 },
+              { code: "OTM_CHRONO", libelle: "Table - Chrono", nb: 1 },
+              { code: "OTM_MARQUE", libelle: "Table - Marque (ordinateur)", nb: 1 },
+              { code: "SALLE", libelle: "Responsable de salle", nb: 1 },
+              { code: "BUVETTE", libelle: "Buvette", nb: 4 }
+            ]
+          },
+          {
+            id: 3,
+            dateISO: "2026-02-07",
+            heure: "14:00",
+            categorie: "U15",
+            equipe: "ASB Courrieres",
+            adversaire: "Carvin",
+            lieu: "Salle Leo Lagrange",
+            domicileExterieur: "EXTERIEUR",
+            note: "Rendez-vous depart minibus 12:45 (exemple).",
+            besoins: [
+              { code: "ACCOMP", libelle: "Accompagnateur / transport", nb: 2 }
+            ]
+          }
+        ]
+      };
+
+      /* =========================
+         ETAT (localStorage)
+         ========================= */
+      var STORAGE_KEY = "club_planning_demo_v1";
+
+      function safeParse(json){
+        try { return JSON.parse(json); } catch(e){ return null; }
+      }
+
+      function loadState(){
+        var raw = localStorage.getItem(STORAGE_KEY);
+        var st = safeParse(raw);
+        if(!st || typeof st !== "object"){
+          st = { assignments: {}, myTokens: {} };
+        }
+        if(!st.assignments){ st.assignments = {}; }
+        if(!st.myTokens){ st.myTokens = {}; }
+        return st;
+      }
+
+      function saveState(){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function resetState(){
+        localStorage.removeItem(STORAGE_KEY);
+        state = loadState();
+      }
+
+      var state = loadState();
+
+      /* =========================
+         UTILITAIRES
+         ========================= */
+      function esc(s){
+        s = (s === null || typeof s === "undefined") ? "" : String(s);
+        return s
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function pad2(n){
+        n = parseInt(n, 10);
+        if(n < 10) return "0" + n;
+        return "" + n;
+      }
+
+      function formatDateFR(dateISO){
+        // dateISO "YYYY-MM-DD"
+        var y = parseInt(dateISO.substring(0,4), 10);
+        var m = parseInt(dateISO.substring(5,7), 10);
+        var d = parseInt(dateISO.substring(8,10), 10);
+        var dt = new Date(y, m - 1, d);
+        var jours = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+        var mois = ["janv.", "fevr.", "mars", "avr.", "mai", "juin", "juil.", "aout", "sept.", "oct.", "nov.", "dec."];
+        return jours[dt.getDay()] + " " + d + " " + mois[m - 1] + " " + y;
+      }
+
+      function makeToken(){
+        // pseudo-random (suffisant pour la demo)
+        return "t" + Math.random().toString(16).substring(2) + Math.random().toString(16).substring(2);
+      }
+
+      function toast(msg){
+        var t = document.getElementById("toast");
+        t.textContent = msg;
+        t.style.display = "block";
+        clearTimeout(toast._timer);
+        toast._timer = setTimeout(function(){
+          t.style.display = "none";
+        }, 2400);
+      }
+
+      function sumSlots(match){
+        var total = 0;
+        var i;
+        for(i = 0; i < match.besoins.length; i++){
+          total += parseInt(match.besoins[i].nb, 10) || 0;
+        }
+        return total;
+      }
+
+      function buildSlots(match){
+        // slots deterministes pour identification stable
+        var slots = [];
+        var i, j, b, slotId;
+        for(i = 0; i < match.besoins.length; i++){
+          b = match.besoins[i];
+          for(j = 1; j <= b.nb; j++){
+            slotId = "m" + match.id + "_" + b.code + "_" + j;
+            slots.push({
+              slotId: slotId,
+              roleCode: b.code,
+              roleLabel: b.libelle,
+              index: j
+            });
+          }
+        }
+        return slots;
+      }
+
+      function countFilled(match){
+        var slots = buildSlots(match);
+        var filled = 0;
+        var i, a;
+        for(i = 0; i < slots.length; i++){
+          a = state.assignments[slots[i].slotId];
+          if(a && a.statut === "ACTIVE") filled++;
+        }
+        return { filled: filled, total: slots.length };
+      }
+
+      function statusDot(filled, total){
+        if(total === 0) return "warn";
+        if(filled >= total) return "ok";
+        if(filled === 0) return "bad";
+        return "warn";
+      }
+
+      function findMatchById(id){
+        var i;
+        for(i = 0; i < DEMO.matchs.length; i++){
+          if(DEMO.matchs[i].id === id) return DEMO.matchs[i];
+        }
+        return null;
+      }
+
+      function getMyToken(slotId){
+        return state.myTokens[slotId] || "";
+      }
+
+      function isMine(slotId){
+        var a = state.assignments[slotId];
+        if(!a || a.statut !== "ACTIVE") return false;
+        var t = getMyToken(slotId);
+        return t && a.tokenEdition === t;
+      }
+
+      /* =========================
+         ROUTAGE SIMPLE
+         ========================= */
+      function setHash(h){
+        location.hash = h;
+      }
+
+      function readRoute(){
+        var h = (location.hash || "").replace("#", "");
+        if(!h) return { view: "list" };
+        if(h.indexOf("match-") === 0){
+          var id = parseInt(h.substring(6), 10);
+          return { view: "match", id: id };
+        }
+        if(h === "mine") return { view: "mine" };
+        if(h === "about") return { view: "about" };
+        return { view: "list" };
+      }
+
+      /* =========================
+         RENDU VUES
+         ========================= */
+      var viewEl = document.getElementById("view");
+
+      function render(){
+        document.getElementById("clubTitle").textContent = "Planning Matchs (Demo) - " + DEMO.club;
+        document.getElementById("clubSub").textContent = DEMO.saison + " - maquette statique (inscriptions simulees)";
+        var r = readRoute();
+        if(r.view === "match") renderMatch(r.id);
+        else if(r.view === "mine") renderMine();
+        else if(r.view === "about") renderAbout();
+        else renderList();
+        highlightNav(r.view);
+      }
+
+      function highlightNav(view){
+        var b1 = document.getElementById("navList");
+        var b2 = document.getElementById("navMine");
+        var b3 = document.getElementById("navAbout");
+
+        b1.className = "btn" + (view === "list" || view === "match" ? " primary" : "");
+        b2.className = "btn" + (view === "mine" ? " primary" : "");
+        b3.className = "btn" + (view === "about" ? " primary" : "");
+      }
+
+      function renderList(){
+        var html = "";
+        html += "<div class='card'>";
+        html += "  <div class='card-h'>";
+        html += "    <div style='flex:1;min-width:0'>";
+        html += "      <p class='h-title'>Prochains matchs</p>";
+        html += "      <p class='h-sub'>Clique un match, puis prends un poste. Tout est simule, mais l effet est proche d une vraie application.</p>";
+        html += "      <div class='meta'>";
+        html += "        <span class='badge'><span class='dot warn'></span>Postes a pourvoir</span>";
+        html += "        <span class='badge'><span class='dot ok'></span>Complet</span>";
+        html += "        <span class='badge'><span class='dot bad'></span>Rien de pris</span>";
+        html += "      </div>";
+        html += "    </div>";
+        html += "  </div>";
+        html += "</div>";
+
+        html += "<div class='grid'>";
+        var i, m, ct, pct, dot;
+        for(i = 0; i < DEMO.matchs.length; i++){
+          m = DEMO.matchs[i];
+          ct = countFilled(m);
+          pct = (ct.total === 0) ? 0 : Math.round((ct.filled / ct.total) * 100);
+          dot = statusDot(ct.filled, ct.total);
+
+          html += "<div class='card'>";
+          html += "  <div class='card-h'>";
+          html += "    <div style='flex:1;min-width:0'>";
+          html += "      <p class='h-title'>" + esc(m.categorie) + " - " + esc(m.equipe) + " vs " + esc(m.adversaire) + "</p>";
+          html += "      <p class='h-sub'>" + esc(formatDateFR(m.dateISO)) + " a " + esc(m.heure) + " | " + esc(m.lieu) + " | " + esc(m.domicileExterieur) + "</p>";
+          html += "      <div class='meta'>";
+          html += "        <span class='badge'><span class='dot " + dot + "'></span>" + esc(ct.filled) + " / " + esc(ct.total) + " postes pourvus</span>";
+          html += "      </div>";
+          html += "    </div>";
+          html += "  </div>";
+          html += "  <div class='card-b'>";
+          html += "    <div class='progress' aria-label='Progression'>";
+          html += "      <div style='width:" + esc(pct) + "%'></div>";
+          html += "    </div>";
+          html += "    <div style='display:flex;gap:10px;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap'>";
+          html += "      <p class='note' style='margin:0'>Objectif : staff + buvette + arbitrage. Simple et clair.</p>";
+          html += "      <button class='btn primary' data-open-match='" + esc(m.id) + "'>Voir / S inscrire</button>";
+          html += "    </div>";
+          html += "  </div>";
+          html += "</div>";
+        }
+        html += "</div>";
+
+        viewEl.innerHTML = html;
+
+        var btns = viewEl.querySelectorAll("[data-open-match]");
+        for(i = 0; i < btns.length; i++){
+          (function(btn){
+            btn.addEventListener("click", function(){
+              var id = parseInt(btn.getAttribute("data-open-match"), 10);
+              setHash("match-" + id);
+            });
+          })(btns[i]);
+        }
+      }
+
+      function renderMatch(id){
+        var m = findMatchById(id);
+        if(!m){
+          viewEl.innerHTML = "<div class='card'><div class='card-b'><p class='h-title'>Match introuvable</p><p class='note'>Retour a la liste.</p></div></div>";
+          return;
+        }
+
+        var ct = countFilled(m);
+        var pct = (ct.total === 0) ? 0 : Math.round((ct.filled / ct.total) * 100);
+        var dot = statusDot(ct.filled, ct.total);
+
+        var slots = buildSlots(m);
+        var html = "";
+
+        html += "<div class='backrow'>";
+        html += "  <button class='btn' id='btnBack'>Retour</button>";
+        html += "  <span class='badge'><span class='dot " + dot + "'></span>" + esc(ct.filled) + " / " + esc(ct.total) + " postes pourvus</span>";
+        html += "</div>";
+
+        html += "<div class='split'>";
+
+        /* Col gauche : detail match + slots */
+        html += "  <div>";
+        html += "    <div class='card'>";
+        html += "      <div class='card-h'>";
+        html += "        <div style='flex:1;min-width:0'>";
+        html += "          <p class='h-title'>" + esc(m.categorie) + " - " + esc(m.equipe) + " vs " + esc(m.adversaire) + "</p>";
+        html += "          <p class='h-sub'>" + esc(formatDateFR(m.dateISO)) + " a " + esc(m.heure) + " | " + esc(m.lieu) + " | " + esc(m.domicileExterieur) + "</p>";
+        html += "          <div class='meta'>";
+        html += "            <span class='badge'>Progression : " + esc(pct) + "%</span>";
+        html += "            <span class='badge'>Objectif : tout remplir avant le match</span>";
+        html += "          </div>";
+        html += "        </div>";
+        html += "      </div>";
+        html += "      <div class='card-b'>";
+        html += "        <div class='progress'><div style='width:" + esc(pct) + "%'></div></div>";
+        html += "        <p class='note' style='margin-top:12px'>" + esc(m.note || " ") + "</p>";
+        html += "      </div>";
+        html += "    </div>";
+
+        html += "    <div style='height:12px'></div>";
+
+        html += "    <div class='card'>";
+        html += "      <div class='card-h'><div style='flex:1'><p class='h-title'>Postes a pourvoir</p><p class='h-sub'>Clique sur un poste libre pour t inscrire. Tes engagements seront visibles dans l onglet Mes engagements.</p></div></div>";
+        html += "      <div class='card-b'>";
+        html += "        <div class='list'>";
+
+        var i, s, a, mine, pill, sub;
+        for(i = 0; i < slots.length; i++){
+          s = slots[i];
+          a = state.assignments[s.slotId];
+          mine = isMine(s.slotId);
+
+          if(a && a.statut === "ACTIVE"){
+            pill = "<span class='pill'><span class='dot ok'></span><strong>" + esc(a.nom) + "</strong></span>";
+            sub = "Pris";
+          } else {
+            pill = "<span class='pill'><span class='dot bad'></span><strong>Libre</strong></span>";
+            sub = "Disponible";
+          }
+
+          html += "          <div class='slot'>";
+          html += "            <div class='slot-left'>";
+          html += "              <p class='slot-role'>" + esc(s.roleLabel) + " <span style='color:rgba(255,255,255,0.55)'>#" + esc(s.index) + "</span></p>";
+          html += "              <p class='slot-sub'>" + esc(sub) + (mine ? " - (c est toi sur ce navigateur)" : "") + "</p>";
+          html += "            </div>";
+          html += "            <div class='slot-right'>";
+          html +=                pill;
+
+          if(a && a.statut === "ACTIVE"){
+            if(mine){
+              html += "              <button class='btn danger' data-cancel-slot='" + esc(s.slotId) + "'>Annuler</button>";
+            } else {
+              html += "              <span class='badge'><span class='dot ok'></span>Occupe</span>";
+            }
+          } else {
+            html += "              <button class='btn primary' data-take-slot='" + esc(s.slotId) + "'>Je prends</button>";
+          }
+
+          html += "            </div>";
+          html += "          </div>";
+        }
+
+        html += "        </div>";
+        html += "      </div>";
+        html += "    </div>";
+        html += "  </div>";
+
+        /* Col droite : resume + conseils */
+        html += "  <div>";
+        html += "    <div class='card'>";
+        html += "      <div class='card-h'><div style='flex:1'><p class='h-title'>Resume rapide</p><p class='h-sub'>Pour la demo, on garde l essentiel. En prod, on ajoutera rappels, exports, et gestion admin.</p></div></div>";
+        html += "      <div class='card-b'>";
+        html += "        <p class='section-title'>Ce que le club verra</p>";
+        html += "        <p class='note'>Un planning simple, des postes, des inscriptions en un clic, et un suivi Mes engagements.</p>";
+        html += "        <div style='height:12px'></div>";
+        html += "        <p class='section-title'>Ce que l admin pourra ajouter ensuite</p>";
+        html += "        <p class='note'>Import calendrier, rappels (email/SMS), fermeture auto des inscriptions, historique, export CSV.</p>";
+        html += "      </div>";
+        html += "    </div>";
+        html += "  </div>";
+
+        html += "</div>";
+
+        viewEl.innerHTML = html;
+
+        document.getElementById("btnBack").addEventListener("click", function(){
+          setHash("");
+        });
+
+        var takeBtns = viewEl.querySelectorAll("[data-take-slot]");
+        for(i = 0; i < takeBtns.length; i++){
+          (function(btn){
+            btn.addEventListener("click", function(){
+              var slotId = btn.getAttribute("data-take-slot");
+              openReserveModal(m, slotId);
+            });
+          })(takeBtns[i]);
+        }
+
+        var cancelBtns = viewEl.querySelectorAll("[data-cancel-slot]");
+        for(i = 0; i < cancelBtns.length; i++){
+          (function(btn){
+            btn.addEventListener("click", function(){
+              var slotId = btn.getAttribute("data-cancel-slot");
+              cancelSlot(slotId);
+            });
+          })(cancelBtns[i]);
+        }
+      }
+
+      function renderMine(){
+        // affiche uniquement les engagements "a moi" (ce navigateur)
+        var html = "";
+
+        html += "<div class='card'>";
+        html += "  <div class='card-h'>";
+        html += "    <div style='flex:1;min-width:0'>";
+        html += "      <p class='h-title'>Mes engagements</p>";
+        html += "      <p class='h-sub'>Ici, on affiche tes inscriptions prises depuis ce navigateur. En version avec comptes, ce serait lie a ton profil.</p>";
+        html += "      <div class='meta'>";
+        html += "        <span class='badge'><span class='dot ok'></span>Annulation possible uniquement sur tes postes</span>";
+        html += "      </div>";
+        html += "    </div>";
+        html += "  </div>";
+        html += "  <div class='card-b'>";
+
+        var items = [];
+        var i, m, slots, j, s, a;
+        for(i = 0; i < DEMO.matchs.length; i++){
+          m = DEMO.matchs[i];
+          slots = buildSlots(m);
+          for(j = 0; j < slots.length; j++){
+            s = slots[j];
+            a = state.assignments[s.slotId];
+            if(a && a.statut === "ACTIVE" && isMine(s.slotId)){
+              items.push({ match: m, slot: s, ass: a });
+            }
+          }
+        }
+
+        if(items.length === 0){
+          html += "    <p class='note'>Pour le moment, tu n as aucun engagement. Va sur un match et clique sur Je prends.</p>";
+        } else {
+          html += "    <div class='list'>";
+          for(i = 0; i < items.length; i++){
+            m = items[i].match;
+            s = items[i].slot;
+            a = items[i].ass;
+            html += "      <div class='slot'>";
+            html += "        <div class='slot-left'>";
+            html += "          <p class='slot-role'>" + esc(s.roleLabel) + " #" + esc(s.index) + " - " + esc(m.categorie) + "</p>";
+            html += "          <p class='slot-sub'>" + esc(formatDateFR(m.dateISO)) + " a " + esc(m.heure) + " | " + esc(m.lieu) + "</p>";
+            html += "        </div>";
+            html += "        <div class='slot-right'>";
+            html += "          <span class='pill'><span class='dot ok'></span><strong>" + esc(a.nom) + "</strong></span>";
+            html += "          <button class='btn danger' data-cancel-slot='" + esc(s.slotId) + "'>Annuler</button>";
+            html += "        </div>";
+            html += "      </div>";
+          }
+          html += "    </div>";
+        }
+
+        html += "    <div style='height:12px'></div>";
+        html += "    <p class='note'>En prod, cette page pourrait etre partagee via un lien prive ou accessible apres login.</p>";
+        html += "  </div>";
+        html += "</div>";
+
+        viewEl.innerHTML = html;
+
+        var cancelBtns = viewEl.querySelectorAll("[data-cancel-slot]");
+        for(i = 0; i < cancelBtns.length; i++){
+          (function(btn){
+            btn.addEventListener("click", function(){
+              var slotId = btn.getAttribute("data-cancel-slot");
+              cancelSlot(slotId);
+            });
+          })(cancelBtns[i]);
+        }
+      }
+
+      function renderAbout(){
+        var html = "";
+        html += "<div class='card'>";
+        html += "  <div class='card-h'>";
+        html += "    <div style='flex:1;min-width:0'>";
+        html += "      <p class='h-title'>A propos de cette maquette</p>";
+        html += "      <p class='h-sub'>Objectif : presenter le principe au club (planning, postes, inscriptions) sans base de donnees.</p>";
+        html += "    </div>";
+        html += "  </div>";
+        html += "  <div class='card-b'>";
+        html += "    <p class='section-title'>Ce qui est inclus</p>";
+        html += "    <p class='note'>Liste des matchs, detail d un match, prise d un poste, page Mes engagements, annulation de ses propres postes.</p>";
+        html += "    <div style='height:10px'></div>";
+        html += "    <p class='section-title'>Ce qui manque volontairement</p>";
+        html += "    <p class='note'>Pas de comptes, pas de moderation admin, pas de notifications, pas d import FFBB, pas d historique. Ce sera la couche suivante.</p>";
+        html += "    <div style='height:10px'></div>";
+        html += "    <p class='section-title'>Comment evoluer vers une vraie app</p>";
+        html += "    <p class='note'>On conserve cette interface, et on remplace le localStorage par une API Node + SQL. On ajoute ensuite droits, rappels, exports, et un back-office.</p>";
+        html += "  </div>";
+        html += "</div>";
+        viewEl.innerHTML = html;
+      }
+
+      /* =========================
+         RESERVATION / ANNULATION
+         ========================= */
+      var modalOverlay = document.getElementById("modalOverlay");
+      var modalSubtitle = document.getElementById("modalSubtitle");
+      var inNom = document.getElementById("inNom");
+      var inContact = document.getElementById("inContact");
+      var inComment = document.getElementById("inComment");
+      var currentReserve = null; // { matchId, slotId }
+
+      function openReserveModal(match, slotId){
+        // si deja pris, on refuse
+        var a = state.assignments[slotId];
+        if(a && a.statut === "ACTIVE"){
+          toast("Ce poste est deja pris.");
+          return;
+        }
+
+        currentReserve = { matchId: match.id, slotId: slotId };
+        inNom.value = "";
+        inContact.value = "";
+        inComment.value = "";
+
+        modalSubtitle.textContent =
+          match.categorie + " - " + match.equipe + " vs " + match.adversaire +
+          " | " + formatDateFR(match.dateISO) + " " + match.heure +
+          " | Poste: " + slotId;
+
+        modalOverlay.style.display = "flex";
+        modalOverlay.setAttribute("aria-hidden", "false");
+        setTimeout(function(){ inNom.focus(); }, 50);
+      }
+
+      function closeModal(){
+        currentReserve = null;
+        modalOverlay.style.display = "none";
+        modalOverlay.setAttribute("aria-hidden", "true");
+      }
+
+      function confirmReserve(){
+        if(!currentReserve) return;
+
+        var nom = (inNom.value || "").replace(/^\s+|\s+$/g, "");
+        var contact = (inContact.value || "").replace(/^\s+|\s+$/g, "");
+        var comment = (inComment.value || "").replace(/^\s+|\s+$/g, "");
+
+        if(!nom || !contact){
+          toast("Merci de renseigner nom et contact.");
+          return;
+        }
+
+        // re-check
+        var slotId = currentReserve.slotId;
+        var a = state.assignments[slotId];
+        if(a && a.statut === "ACTIVE"){
+          toast("Quelqu un vient de prendre ce poste (demo).");
+          closeModal();
+          render();
+          return;
+        }
+
+        var token = makeToken();
+
+        state.assignments[slotId] = {
+          statut: "ACTIVE",
+          nom: nom,
+          contact: contact,
+          comment: comment,
+          tokenEdition: token,
+          dateCreationISO: new Date().toISOString()
+        };
+        state.myTokens[slotId] = token;
+        saveState();
+
+        closeModal();
+        toast("Poste reserve. (demo)");
+        render();
+      }
+
+      function cancelSlot(slotId){
+        if(!isMine(slotId)){
+          toast("Annulation impossible (ce poste n est pas a toi sur ce navigateur).");
+          return;
+        }
+        delete state.assignments[slotId];
+        delete state.myTokens[slotId];
+        saveState();
+        toast("Engagement annule.");
+        render();
+      }
+
+      /* =========================
+         NAV / EVENTS
+         ========================= */
+      document.getElementById("navList").addEventListener("click", function(){
+        setHash("");
+      });
+      document.getElementById("navMine").addEventListener("click", function(){
+        setHash("mine");
+      });
+      document.getElementById("navAbout").addEventListener("click", function(){
+        setHash("about");
+      });
+      document.getElementById("navReset").addEventListener("click", function(){
+        if(confirm("Reinitialiser toutes les inscriptions de cette demo sur ce navigateur ?")){
+          resetState();
+          toast("Demo reinitialisee.");
+          render();
+        }
+      });
+
+      document.getElementById("modalClose").addEventListener("click", closeModal);
+      document.getElementById("modalCancel").addEventListener("click", closeModal);
+      document.getElementById("modalConfirm").addEventListener("click", confirmReserve);
+
+      modalOverlay.addEventListener("click", function(e){
+        if(e.target === modalOverlay) closeModal();
+      });
+
+      window.addEventListener("hashchange", render);
+
+      // init
+      render();
+    })();
+  </script>
+</body>
+</html>
